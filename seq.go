@@ -3,7 +3,6 @@ package cclib
 import (
 	"fmt"
 	"io/fs"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,9 +10,8 @@ import (
 
 // SeqInfo holds information about an image sequence.
 type SeqInfo struct {
-	Dir        string
 	BaseName   string
-	Delimeter  string
+	Delimiter  string
 	Padding    int
 	StartFrame int
 	EndFrame   int
@@ -21,9 +19,8 @@ type SeqInfo struct {
 }
 
 // findImageSequences scans the specified directory for image sequences.
-func FindImageSequences(directory string) ([]SeqInfo, error) {
-	dirFS := os.DirFS(directory)
-	files, err := fs.ReadDir(dirFS, ".")
+func FindImageSequences(dir fs.FS) ([]SeqInfo, error) {
+	files, err := fs.ReadDir(dir, ".")
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +40,7 @@ func FindImageSequences(directory string) ([]SeqInfo, error) {
 		}
 
 		baseName := matches[1]
-		delimeter := matches[2]
+		delimiter := matches[2]
 		numberStr := matches[3]
 		extension := matches[4]
 
@@ -53,14 +50,13 @@ func FindImageSequences(directory string) ([]SeqInfo, error) {
 			continue
 		}
 
-		key := fmt.Sprintf("%s%s%s", baseName, delimeter, extension)
+		key := fmt.Sprintf("%s%s%s", baseName, delimiter, extension)
 		info, exists := seqMap[key]
 
 		if !exists {
 			info = SeqInfo{
-				Dir:        directory,
 				BaseName:   baseName,
-				Delimeter:  delimeter,
+				Delimiter:  delimiter,
 				Padding:    padding,
 				StartFrame: frameNumber,
 				EndFrame:   frameNumber,
